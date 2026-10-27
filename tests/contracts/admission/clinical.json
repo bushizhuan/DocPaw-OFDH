@@ -1,0 +1,55 @@
+{
+  "head": {
+    "schemaId": "urn:example:synthetic-admission",
+    "version": "0.1.0",
+    "documentVersion": "1",
+    "createdAt": "2026-10-23T09:00:00+08:00",
+    "modifiedAt": "2026-10-23T09:00:00+08:00"
+  },
+  "meta": {
+    "title": "合成示例入院记录",
+    "creator": {
+      "id": "SYNTHETIC-AUTHOR-0001",
+      "name": "合成示例责任者",
+      "authority": "urn:example:synthetic-hospital:staff"
+    },
+    "keywords": ["入院记录", "合成示例"],
+    "properties": {
+      "synthetic": true,
+      "purpose": "契约设计与一致性测试，不用于诊疗",
+      "sourceSystem": "urn:example:synthetic-emr",
+      "sourceRecordId": "SYNTHETIC-RECORD-0001"
+    }
+  },
+  "identifier": {
+    "documentId": "SYNTHETIC-ADMISSION-0001",
+    "documentType": {
+      "code": "ADMISSION_RECORD",
+      "scheme": "urn:example:synthetic-document-type:v1"
+    },
+    "confidentiality": {
+      "code": "SYNTHETIC_ONLY",
+      "scheme": "urn:example:synthetic-confidentiality:v1"
+    }
+  },
+  "patient": {
+    "id": "SYNTHETIC-PATIENT-0001",
+    "authority": "urn:example:synthetic-hospital:patient"
+  },
+  "encounter": {
+    "id": "SYNTHETIC-ENCOUNTER-0001",
+    "authority": "urn:example:synthetic-hospital:encounter"
+  },
+  "sections": {
+    "chiefComplaint": "合成测试文本：本字段仅演示主诉的结构位置。",
+    "presentIllness": "合成测试文本：不对应真实人员或真实诊疗记录。",
+    "admissionDiagnoses": [
+      {
+        "sequence": 1,
+        "code": "DEMO-DIAGNOSIS",
+        "scheme": "urn:example:synthetic-diagnosis:v1",
+        "text": "合成测试诊断，非临床诊断编码"
+      }
+    ]
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "contractVersion": "0.1.0",
+  "tool": {
+    "name": "DocPaw-OFDH",
+    "version": "0.1.0"
+  },
+  "reportId": "SYNTHETIC-CHECK-0001",
+  "generatedAt": "2026-10-23T09:05:00+08:00",
+  "artifact": {
+    "name": "synthetic-admission.ofd",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "ruleSet": {
+    "id": "ofd-h-core",
+    "version": "0.1.0",
+    "standard": "GB/T 48666-2026"
+  },
+  "assessment": "INCOMPLETE",
+  "coverage": {
+    "catalogRuleCount": 7,
+    "implementedRuleCount": 5,
+    "evaluatedRuleCount": 4,
+    "resultCounts": {
+      "PASS": 4,
+      "FAIL": 0,
+      "NOT_APPLICABLE": 0,
+      "NOT_CHECKED": 3
+    },
+    "scopeComplete": false,
+    "uncoveredAreas": ["字体嵌入及例外条件", "临床内容与版式的语义一致性", "离线证书信任与吊销状态"]
+  },
+  "results": [
+    {
+      "ruleId": "OFDH-SINGLE-DOCUMENT",
+      "result": "PASS",
+      "severity": "ERROR",
+      "ruleSource": {"kind": "STANDARD", "reference": "GB/T 48666-2026"},
+      "clause": "6.1.2",
+      "message": "合成报告示意：包内单文档结构检查通过。",
+      "location": "OFD.xml"
+    },
+    {
+      "ruleId": "OFDH-DOCTYPE",
+      "result": "PASS",
+      "severity": "ERROR",
+      "ruleSource": {"kind": "STANDARD", "reference": "GB/T 48666-2026"},
+      "clause": "7.1",
+      "message": "合成报告示意：DocType 为 OFD-H。",
+      "location": "OFD.xml/DocBody/DocInfo/DocType"
+    },
+    {
+      "ruleId": "OFDH-METADATA",
+      "result": "PASS",
+      "severity": "ERROR",
+      "ruleSource": {"kind": "STANDARD", "reference": "GB/T 48666-2026"},
+      "clause": "7.3 a), b)",
+      "message": "合成报告示意：已实现的必要元数据存在性检查通过，不代表身份真实性得到验证。"
+    },
+    {
+      "ruleId": "OFDH-FONT-EMBEDDING",
+      "result": "NOT_CHECKED",
+      "severity": "ERROR",
+      "ruleSource": {"kind": "STANDARD", "reference": "GB/T 48666-2026"},
+      "clause": "7.2 b)",
+      "message": "合成报告示意：当前规则实现未覆盖字体嵌入例外条件。",
+      "remediation": "在发布产物前完成相应检查或由具备能力的工具进行独立核验。"
+    },
+    {
+      "ruleId": "OFDH-CLINICAL-CONSISTENCY",
+      "result": "NOT_CHECKED",
+      "severity": "WARNING",
+      "ruleSource": {"kind": "STANDARD", "reference": "GB/T 48666-2026"},
+      "clause": "7.3 c)",
+      "message": "合成报告示意：结构化数据与版式全文的语义一致性需要源系统或人工确认。",
+      "remediation": "核对同一业务快照中的版式内容与临床数据，保存确认依据。"
+    },
+    {
+      "ruleId": "OFDH-SIGNATURE-CRYPTO",
+      "result": "PASS",
+      "severity": "ERROR",
+      "ruleSource": {"kind": "STANDARD", "reference": "GB/T 48666-2026"},
+      "clause": "8",
+      "message": "合成报告示意：摘要与签名值密码学验证通过；此结果不表示证书受信。",
+      "location": "Doc_0/Signs/Sign_0"
+    },
+    {
+      "ruleId": "PROJECT-CERTIFICATE-TRUST",
+      "result": "NOT_CHECKED",
+      "severity": "ERROR",
+      "ruleSource": {"kind": "PROJECT", "reference": "ofd-h-core/trust-policy:0.1.0"},
+      "clause": null,
+      "message": "合成报告示意：未配置受信根和吊销证据，无法确定证书信任。",
+      "remediation": "提供医院确认的信任策略和可用证据后再次验证。"
+    }
+  ],
+  "signatureVerification": {
+    "enumeration": "COMPLETE",
+    "signatureCount": 1,
+    "signatures": [
+      {
+        "signatureId": "SYNTHETIC-SIGNATURE-0001",
+        "cryptographicVerification": "PASS",
+        "certificateTrust": "UNKNOWN",
+        "revocation": "UNKNOWN",
+        "timestamp": "ABSENT",
+        "reason": "全部为合成报告数据；模拟签名值有效但缺乏信任及吊销证据的情形，未执行真实签名验证。"
+      }
+    ]
+  },
+  "limitations": [
+    "本文件是报告契约示例，摘要为占位值，不对应实际 OFD 文件或真实验证结果。",
+    "规则集仅展示部分条款，四项通过不能汇总为标准符合或认证通过。",
+    "时间戳缺失本身不自动判为必选项失败；信任未知和未检查项目仍保留为未完成。"
+  ]
+}

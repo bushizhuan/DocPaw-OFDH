@@ -1,0 +1,21 @@
+name: 接入需求
+description: 说明现有业务接入中缺少的能力
+body:
+  - type: textarea
+    id: scenario
+    attributes:
+      label: 接入场景
+      description: 说明来源格式、调用方式，以及当前处理流程遇到的阻碍；不要包含医院或患者敏感信息。
+    validations:
+      required: true
+  - type: textarea
+    id: expectation
+    attributes:
+      label: 期望能力与验收方式
+      description: 提供可核实的规范依据、可公开样本来源或可观察的结果。
+    validations:
+      required: true
+  - type: textarea
+    id: workaround
+    attributes:
+      label: 目前的处理方式

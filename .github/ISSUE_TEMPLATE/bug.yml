@@ -1,0 +1,41 @@
+name: 缺陷反馈
+description: 报告文件处理、SDK 或命令行的实际问题
+body:
+  - type: markdown
+    attributes:
+      value: |
+        安全问题请按 SECURITY.md 私密反馈。不要上传真实病历、患者信息、凭据或私钥。
+  - type: input
+    id: version
+    attributes:
+      label: 工具版本
+      description: 填写发行版本；自行编译时补充提交号。
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: 运行环境
+      description: 操作系统、Java 版本和 SDK 或 CLI 接入方式。
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 复现步骤
+      description: 提供最少调用步骤、输入格式和错误码；命令及日志请删除敏感内容。
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: 预期结果与实际结果
+    validations:
+      required: true
+  - type: checkboxes
+    id: disclosure
+    attributes:
+      label: 提交前检查
+      options:
+        - label: 所提供内容不含患者信息、真实病历、凭据或私钥，附件具有公开分发权限。
+          required: true

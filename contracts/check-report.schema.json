@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ofd-h:contracts:check-report:0.1.0",
+  "title": "DocPaw-OFDH 检查报告契约 0.1.0",
+  "description": "项目检查报告，不构成标准认证。check 可接收任意待检文件，不要求提供 prepare 的完整请求。报告应绑定被检文件摘要和规则集版本。计数关系、结果优先级和密码学验证需运行时完成。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "tool", "reportId", "generatedAt", "artifact", "ruleSet", "assessment", "coverage", "results", "signatureVerification", "limitations"],
+  "properties": {
+    "contractVersion": {"const": "0.1.0"},
+    "tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": {"$ref": "#/$defs/nonBlank"},
+        "version": {"$ref": "#/$defs/nonBlank"}
+      },
+      "description": "执行检查的工具名称与发布版本；与 ruleSet.version 分别记录，便于固定实现和规则重现结果。"
+    },
+    "reportId": {"$ref": "#/$defs/nonBlank"},
+    "generatedAt": {"$ref": "#/$defs/timestamp"},
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "sha256"],
+      "properties": {
+        "name": {"$ref": "#/$defs/nonBlank"},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "ruleSet": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "standard"],
+      "properties": {
+        "id": {"$ref": "#/$defs/nonBlank"},
+        "version": {"$ref": "#/$defs/nonBlank"},
+        "standard": {"const": "GB/T 48666-2026"}
+      }
+    },
+    "assessment": {
+      "enum": ["ISSUES_FOUND", "INCOMPLETE", "NO_ISSUES_IN_EXECUTED_CHECKS"],
+      "description": "有 FAIL 为 ISSUES_FOUND；否则存在未检查、未知信任或适用范围未覆盖为 INCOMPLETE；其余仅表示执行的检查未发现问题。任何取值都不是标准认证结论，不提供整体 PASS。"
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["catalogRuleCount", "implementedRuleCount", "evaluatedRuleCount", "resultCounts", "scopeComplete", "uncoveredAreas"],
+      "properties": {
+        "catalogRuleCount": {"type": "integer", "minimum": 1, "description": "当前选定规则集条目数，不是标准所有条款数量。"},
+        "implementedRuleCount": {"type": "integer", "minimum": 0},
+        "evaluatedRuleCount": {"type": "integer", "minimum": 0, "description": "PASS + FAIL + NOT_APPLICABLE；未检查不计入。"},
+        "resultCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["PASS", "FAIL", "NOT_APPLICABLE", "NOT_CHECKED"],
+          "properties": {
+            "PASS": {"type": "integer", "minimum": 0},
+            "FAIL": {"type": "integer", "minimum": 0},
+            "NOT_APPLICABLE": {"type": "integer", "minimum": 0},
+            "NOT_CHECKED": {"type": "integer", "minimum": 0}
+          }
+        },
+        "scopeComplete": {"type": "boolean", "description": "当前目标适用检查范围是否覆盖完整；不是国家标准完全符合性标记。"},
+        "uncoveredAreas": {"type": "array", "items": {"$ref": "#/$defs/nonBlank"}, "uniqueItems": true}
+      }
+    },
+    "results": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ruleId", "result", "severity", "ruleSource", "clause", "message"],
+        "properties": {
+          "ruleId": {"$ref": "#/$defs/nonBlank"},
+          "result": {"enum": ["PASS", "FAIL", "NOT_APPLICABLE", "NOT_CHECKED"]},
+          "severity": {"enum": ["ERROR", "WARNING", "INFO"]},
+          "ruleSource": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "reference"],
+            "properties": {
+              "kind": {"enum": ["STANDARD", "PROJECT"]},
+              "reference": {"$ref": "#/$defs/nonBlank"}
+            }
+          },
+          "clause": {"type": ["string", "null"], "description": "标准规则给出条款号；项目增强规则可为 null。"},
+          "message": {"$ref": "#/$defs/nonBlank"},
+          "location": {"type": "string", "description": "包内路径或逻辑字段路径；避免泄露磁盘绝对路径和患者正文。"},
+          "remediation": {"$ref": "#/$defs/nonBlank"}
+        }
+      }
+    },
+    "signatureVerification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enumeration", "signatureCount", "signatures"],
+      "properties": {
+        "enumeration": {"enum": ["COMPLETE", "NOT_CHECKED", "FAILED"]},
+        "signatureCount": {"type": ["integer", "null"], "minimum": 0, "description": "无法完成枚举时为 null；已枚举但未签名为 0。"},
+        "signatures": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["signatureId", "cryptographicVerification", "certificateTrust", "revocation", "timestamp", "reason"],
+            "properties": {
+              "signatureId": {"$ref": "#/$defs/nonBlank"},
+              "cryptographicVerification": {"enum": ["PASS", "FAIL", "NOT_CHECKED"], "description": "受保护数据摘要和签名值的密码学验证，不代表证书受信。"},
+              "certificateTrust": {"enum": ["TRUSTED", "UNTRUSTED", "UNKNOWN", "NOT_CHECKED"]},
+              "revocation": {"enum": ["GOOD", "REVOKED", "UNKNOWN", "NOT_CHECKED"]},
+              "timestamp": {"enum": ["VALID", "INVALID", "ABSENT", "NOT_CHECKED"], "description": "时间戳缺失不自动视为标准必选项失败；是否阻断由目标规则和业务策略决定。"},
+              "reason": {"$ref": "#/$defs/nonBlank"}
+            }
+          }
+        }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/nonBlank"},
+      "description": "报告明确声明能力边界及无法验证的事项。"
+    }
+  },
+  "$defs": {
+    "nonBlank": {"type": "string", "minLength": 1, "maxLength": 1024, "pattern": "\\S"},
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:openofdh:contracts:validation-report:0.1.0",
+  "title": "字段校验报告",
+  "description": "项目校验报告契约。path 使用 JSON Pointer，actualType 只描述类型，不包含实际字段值。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["valid", "issues", "truncated"],
+  "properties": {
+    "valid": { "type": "boolean" },
+    "issues": {
+      "type": "array",
+      "maxItems": 100,
+      "items": { "$ref": "#/$defs/issue" }
+    },
+    "truncated": {
+      "type": "boolean",
+      "description": "为 true 时仍有未列出的错误，应修正已列问题后再次校验。"
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "valid": { "const": true } } },
+      "then": {
+        "properties": {
+          "issues": { "maxItems": 0 },
+          "truncated": { "const": false }
+        }
+      },
+      "else": {
+        "anyOf": [
+          { "properties": { "issues": { "minItems": 1 } } },
+          { "properties": { "truncated": { "const": true } } }
+        ]
+      }
+    }
+  ],
+  "$defs": {
+    "issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "keyword", "message", "expected", "actualType"],
+      "properties": {
+        "path": { "type": "string", "pattern": "^(?:/(?:[^~/]|~[01])*)*$" },
+        "keyword": { "type": "string", "minLength": 1 },
+        "message": { "type": "string", "minLength": 1 },
+        "expected": { "type": "string", "minLength": 1 },
+        "actualType": { "enum": ["missing", "null", "string", "integer", "number", "boolean", "object", "array"] }
+      }
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "contractVersion": "0.1.0",
+  "documentId": "SYNTHETIC-ADMISSION-0001",
+  "sourceSystem": "urn:example:synthetic-emr",
+  "sourceRecordId": "SYNTHETIC-RECORD-0001",
+  "sourceVersion": "1",
+  "documentType": {
+    "code": "ADMISSION_RECORD",
+    "scheme": "urn:example:synthetic-document-type:v1"
+  },
+  "patient": {
+    "id": "SYNTHETIC-PATIENT-0001",
+    "authority": "urn:example:synthetic-hospital:patient"
+  },
+  "encounter": {
+    "id": "SYNTHETIC-ENCOUNTER-0001",
+    "authority": "urn:example:synthetic-hospital:encounter"
+  },
+  "responsibleParty": {
+    "id": "SYNTHETIC-AUTHOR-0001",
+    "name": "合成示例责任者",
+    "authority": "urn:example:synthetic-hospital:staff"
+  },
+  "createdAt": "2026-10-23T09:00:00+08:00",
+  "keywords": ["入院记录", "合成示例"],
+  "confidentiality": {
+    "code": "SYNTHETIC_ONLY",
+    "scheme": "urn:example:synthetic-confidentiality:v1"
+  },
+  "source": {
+    "format": "PDF",
+    "path": "admission/source.pdf"
+  },
+  "clinicalData": {
+    "path": "admission/clinical.json",
+    "schemaId": "urn:example:synthetic-admission",
+    "schemaVersion": "0.1.0"
+  }
+}

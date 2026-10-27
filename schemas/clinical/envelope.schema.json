@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:openofdh:clinical:envelope:0.1.0",
+  "title": "临床数据通用封套",
+  "description": "DocPaw-OFDH 项目接入约束，不是国家标准的官方 Schema。验证来源和文书元数据的结构；content 内的临床正文由接入方负责。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["head", "meta", "identifier", "patient", "content"],
+  "properties": {
+    "head": {"$ref": "#/$defs/head"},
+    "meta": {"$ref": "#/$defs/meta"},
+    "identifier": {"$ref": "#/$defs/identifier"},
+    "patient": {"$ref": "#/$defs/patient"},
+    "encounter": {"$ref": "#/$defs/identity"},
+    "content": {
+      "type": "object",
+      "minProperties": 1,
+      "description": "接入方的临床正文；本通用封套不校验正文的字段含义。需要正文约束时应选择业务 Schema 或注册自己的 Schema。"
+    },
+    "extensions": {"$ref": "#/$defs/extensions"}
+  },
+  "$defs": {
+    "nonBlank": {"type": "string", "minLength": 1, "maxLength": 512, "pattern": "\\S"},
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
+      "description": "带时区的时间，要求真实日历日期；支持 Z 或明确的时区偏移。"
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "authority"],
+      "properties": {"id": {"$ref": "#/$defs/nonBlank"}, "authority": {"$ref": "#/$defs/nonBlank"}}
+    },
+    "person": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "authority"],
+      "properties": {"id": {"$ref": "#/$defs/nonBlank"}, "name": {"$ref": "#/$defs/nonBlank"}, "authority": {"$ref": "#/$defs/nonBlank"}}
+    },
+    "codedConcept": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "scheme"],
+      "properties": {"code": {"$ref": "#/$defs/nonBlank"}, "scheme": {"$ref": "#/$defs/nonBlank"}, "display": {"$ref": "#/$defs/nonBlank"}},
+      "description": "代码与代码体系必须同时提供；不内置或推断医院采用的代码字典。"
+    },
+    "patient": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "authority"],
+      "properties": {
+        "id": {"$ref": "#/$defs/nonBlank"},
+        "authority": {"$ref": "#/$defs/nonBlank"},
+        "name": {"$ref": "#/$defs/nonBlank"},
+        "birthDate": {"type": "string", "format": "date", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+        "sex": {"$ref": "#/$defs/codedConcept"}
+      }
+    },
+    "head": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profile", "schemaId", "version", "documentVersion", "createdAt", "modifiedAt"],
+      "properties": {
+        "profile": {"const": "urn:openofdh:clinical-envelope:0.1.0"},
+        "schemaId": {"const": "urn:openofdh:clinical:envelope"},
+        "version": {"const": "0.1.0"},
+        "documentVersion": {"$ref": "#/$defs/nonBlank"},
+        "createdAt": {"$ref": "#/$defs/timestamp"},
+        "modifiedAt": {"$ref": "#/$defs/timestamp"}
+      }
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["creator", "keywords", "properties"],
+      "properties": {
+        "title": {"$ref": "#/$defs/nonBlank"},
+        "creator": {"$ref": "#/$defs/person"},
+        "keywords": {"type": "array", "minItems": 1, "maxItems": 100, "uniqueItems": true, "items": {"$ref": "#/$defs/nonBlank"}},
+        "properties": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sourceSystem", "sourceRecordId"],
+          "properties": {"sourceSystem": {"$ref": "#/$defs/nonBlank"}, "sourceRecordId": {"$ref": "#/$defs/nonBlank"}, "extensions": {"$ref": "#/$defs/extensions"}}
+        }
+      }
+    },
+    "identifier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["documentId", "documentType", "confidentiality"],
+      "properties": {"documentId": {"$ref": "#/$defs/nonBlank"}, "documentType": {"$ref": "#/$defs/codedConcept"}, "confidentiality": {"$ref": "#/$defs/codedConcept"}}
+    },
+    "extensions": {"type": "object", "description": "接入方扩展字段；调用方应维护键的命名空间和版本，扩展内容的业务含义不由本 Schema 判断。"}
+  }
+}

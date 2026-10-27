@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:openofdh:clinical:lab-report:0.1.0",
+  "title": "检验报告",
+  "description": "DocPaw-OFDH 项目接入约束，不是国家标准的官方 Schema。约束报告、标本、项目和结果结构，不判断参考区间、异常标记或医学结论是否正确。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["head", "meta", "identifier", "patient", "content"],
+  "properties": {
+    "head": {"$ref": "#/$defs/head"},
+    "meta": {"$ref": "#/$defs/meta"},
+    "identifier": {"$ref": "#/$defs/identifier"},
+    "patient": {"$ref": "#/$defs/patient"},
+    "encounter": {"$ref": "#/$defs/identity"},
+    "content": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reportId", "reportedAt", "specimen", "items"],
+      "properties": {
+        "reportId": {"$ref": "#/$defs/nonBlank"},
+        "reportedAt": {"$ref": "#/$defs/timestamp"},
+        "specimen": {"$ref": "#/$defs/specimen"},
+        "items": {"type": "array", "minItems": 1, "maxItems": 10000, "items": {"$ref": "#/$defs/item"}},
+        "conclusion": {"$ref": "#/$defs/narrative"},
+        "extensions": {"$ref": "#/$defs/extensions"}
+      }
+    },
+    "extensions": {"$ref": "#/$defs/extensions"}
+  },
+  "$defs": {
+    "nonBlank": {"type": "string", "minLength": 1, "maxLength": 512, "pattern": "\\S"},
+    "narrative": {"type": "string", "minLength": 1, "maxLength": 1000000, "pattern": "\\S"},
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
+      "description": "带时区的时间，要求真实日历日期；支持 Z 或明确的时区偏移。"
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "authority"],
+      "properties": {"id": {"$ref": "#/$defs/nonBlank"}, "authority": {"$ref": "#/$defs/nonBlank"}}
+    },
+    "person": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "authority"],
+      "properties": {"id": {"$ref": "#/$defs/nonBlank"}, "name": {"$ref": "#/$defs/nonBlank"}, "authority": {"$ref": "#/$defs/nonBlank"}}
+    },
+    "codedConcept": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "scheme"],
+      "properties": {"code": {"$ref": "#/$defs/nonBlank"}, "scheme": {"$ref": "#/$defs/nonBlank"}, "display": {"$ref": "#/$defs/nonBlank"}},
+      "description": "代码与代码体系必须同时提供；不内置或推断医院采用的代码字典。"
+    },
+    "specimen": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": {"$ref": "#/$defs/nonBlank"},
+        "type": {"$ref": "#/$defs/codedConcept"},
+        "collectedAt": {"$ref": "#/$defs/timestamp"},
+        "receivedAt": {"$ref": "#/$defs/timestamp"},
+        "extensions": {"$ref": "#/$defs/extensions"}
+      }
+    },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["test", "result"],
+      "properties": {
+        "test": {"$ref": "#/$defs/codedConcept"},
+        "result": {"$ref": "#/$defs/result"},
+        "referenceText": {"$ref": "#/$defs/nonBlank", "description": "来源报告的参考范围原文，不由工具计算。"},
+        "abnormalFlag": {"enum": ["NORMAL", "LOW", "HIGH", "ABNORMAL", "UNKNOWN"], "description": "项目约定的标记；仅接收来源系统明确给出的结果，不自动从数值推断。"},
+        "critical": {"type": "boolean", "description": "来源系统的危急值标记，不由工具判定。"},
+        "extensions": {"$ref": "#/$defs/extensions"}
+      }
+    },
+    "result": {
+      "description": "按 kind 区分数值、文本和编码结果；不将数字字符串自动转换为数值。",
+      "type": "object",
+      "required": ["kind", "value"],
+      "properties": {"kind": {"enum": ["NUMBER", "TEXT", "CODED"]}},
+      "allOf": [
+        {
+          "if": {"required": ["kind"], "properties": {"kind": {"const": "NUMBER"}}},
+          "then": {
+            "additionalProperties": false,
+            "properties": {
+              "kind": {"const": "NUMBER"},
+              "value": {"type": "number"},
+              "unit": {"$ref": "#/$defs/nonBlank"},
+              "comparator": {"enum": ["<", "<=", "=", ">=", ">"]}
+            }
+          }
+        },
+        {
+          "if": {"required": ["kind"], "properties": {"kind": {"const": "TEXT"}}},
+          "then": {
+            "additionalProperties": false,
+            "properties": {"kind": {"const": "TEXT"}, "value": {"$ref": "#/$defs/narrative"}}
+          }
+        },
+        {
+          "if": {"required": ["kind"], "properties": {"kind": {"const": "CODED"}}},
+          "then": {
+            "additionalProperties": false,
+            "properties": {"kind": {"const": "CODED"}, "value": {"$ref": "#/$defs/codedConcept"}}
+          }
+        }
+      ]
+    },
+    "patient": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "authority"],
+      "properties": {
+        "id": {"$ref": "#/$defs/nonBlank"},
+        "authority": {"$ref": "#/$defs/nonBlank"},
+        "name": {"$ref": "#/$defs/nonBlank"},
+        "birthDate": {"type": "string", "format": "date", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+        "sex": {"$ref": "#/$defs/codedConcept"}
+      }
+    },
+    "head": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profile", "schemaId", "version", "documentVersion", "createdAt", "modifiedAt"],
+      "properties": {
+        "profile": {"const": "urn:openofdh:clinical-envelope:0.1.0"},
+        "schemaId": {"const": "urn:openofdh:clinical:lab-report"},
+        "version": {"const": "0.1.0"},
+        "documentVersion": {"$ref": "#/$defs/nonBlank"},
+        "createdAt": {"$ref": "#/$defs/timestamp"},
+        "modifiedAt": {"$ref": "#/$defs/timestamp"}
+      }
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["creator", "keywords", "properties"],
+      "properties": {
+        "title": {"$ref": "#/$defs/nonBlank"},
+        "creator": {"$ref": "#/$defs/person"},
+        "keywords": {"type": "array", "minItems": 1, "maxItems": 100, "uniqueItems": true, "items": {"$ref": "#/$defs/nonBlank"}},
+        "properties": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sourceSystem", "sourceRecordId"],
+          "properties": {"sourceSystem": {"$ref": "#/$defs/nonBlank"}, "sourceRecordId": {"$ref": "#/$defs/nonBlank"}, "extensions": {"$ref": "#/$defs/extensions"}}
+        }
+      }
+    },
+    "identifier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["documentId", "documentType", "confidentiality"],
+      "properties": {"documentId": {"$ref": "#/$defs/nonBlank"}, "documentType": {"$ref": "#/$defs/codedConcept"}, "confidentiality": {"$ref": "#/$defs/codedConcept"}}
+    },
+    "extensions": {"type": "object", "description": "接入方扩展字段；调用方应维护键的命名空间和版本，扩展内容的业务含义不由本 Schema 判断。"}
+  }
+}

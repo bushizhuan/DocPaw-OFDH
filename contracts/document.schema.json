@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ofd-h:contracts:document:0.1.0",
+  "title": "DocPaw-OFDH prepare 请求契约 0.1.0",
+  "description": "项目自定义的开发者输入契约，不是国家标准规定的 JSON Schema。prepare 校验必须启用 format assertion；运行时还需检查路径、文件内容和业务版本一致性。生成时间及最终文件标识由引擎记录，不用当前时间替代来源 createdAt。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "documentId", "sourceSystem", "sourceRecordId", "sourceVersion", "documentType", "patient", "responsibleParty", "createdAt", "keywords", "confidentiality", "source"],
+  "properties": {
+    "contractVersion": {"const": "0.1.0"},
+    "documentId": {"$ref": "#/$defs/nonBlank", "description": "由接入方分配的业务文档标识；与 sourceVersion 一起标识来源版本，不是最终文件 fileId。"},
+    "sourceSystem": {"$ref": "#/$defs/nonBlank", "description": "来源系统的稳定命名空间，由接入方维护唯一性。"},
+    "sourceRecordId": {"$ref": "#/$defs/nonBlank"},
+    "sourceVersion": {"$ref": "#/$defs/nonBlank", "description": "版式和临床数据共同对应的来源业务版本，不能由工具包猜测。"},
+    "documentType": {"$ref": "#/$defs/codedValue", "description": "临床文书分类；与 OFD 文件 DocType=OFD-H 属于不同概念。"},
+    "patient": {"$ref": "#/$defs/identity"},
+    "encounter": {"$ref": "#/$defs/identity", "description": "可选就诊关联；由接入方决定门诊、住院等标识体系。"},
+    "responsibleParty": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "authority"],
+      "properties": {
+        "id": {"$ref": "#/$defs/nonBlank"},
+        "name": {"$ref": "#/$defs/nonBlank"},
+        "authority": {"$ref": "#/$defs/nonBlank"}
+      },
+      "description": "来源文书的责任者信息，不自动等于电子签名主体，也不构成委托签署授权。"
+    },
+    "createdAt": {"$ref": "#/$defs/timestamp", "description": "来源文书创建时间，必须含时区。"},
+    "keywords": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/nonBlank"}
+    },
+    "confidentiality": {"$ref": "#/$defs/codedValue", "description": "密级代码及其代码体系；示例代码不是国家统一代码，接入方应确认实际适用体系。"},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "path"],
+      "properties": {
+        "format": {"enum": ["PDF", "OFD"]},
+        "path": {"$ref": "#/$defs/relativePath"},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$", "description": "可选调用方预期摘要；存在时必须匹配输入文件，不能仅记录而不比较。"}
+      }
+    },
+    "clinicalData": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "schemaId", "schemaVersion"],
+      "properties": {
+        "path": {"$ref": "#/$defs/relativePath"},
+        "schemaId": {"$ref": "#/$defs/nonBlank", "description": "接入方选用的临床数据规范标识；只是标识，不触发网络下载 Schema。"},
+        "schemaVersion": {"$ref": "#/$defs/nonBlank"}
+      },
+      "description": "可选机读临床数据。提供时应符合声明的本地已注册规范，且与 sourceVersion 对应；不提供不等于可以忽略必要元数据。"
+    }
+  },
+  "$defs": {
+    "nonBlank": {"type": "string", "minLength": 1, "maxLength": 512, "pattern": "\\S"},
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "authority"],
+      "properties": {
+        "id": {"$ref": "#/$defs/nonBlank"},
+        "authority": {"$ref": "#/$defs/nonBlank"}
+      }
+    },
+    "codedValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "scheme"],
+      "properties": {
+        "code": {"$ref": "#/$defs/nonBlank"},
+        "scheme": {"$ref": "#/$defs/nonBlank"}
+      }
+    },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*[:\\\\\\u0000-\\u001F])[^/]+(?:/[^/]+)*$",
+      "description": "使用 / 分隔、相对显式 inputRoot 的文件路径；禁止 URL、绝对路径、盘符、反斜杠、空段、. 和 ..。不做 URL 解码；运行时校验真实路径及符号链接/联接点，不能只依赖此正则。"
+    }
+  }
+}

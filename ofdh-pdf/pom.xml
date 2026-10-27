@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.openofdh</groupId>
+    <artifactId>ofdh-parent</artifactId>
+    <version>0.2.0</version>
+  </parent>
+  <artifactId>ofdh-pdf</artifactId>
+  <name>DocPaw-OFDH PDF</name>
+  <dependencies>
+    <dependency>
+      <groupId>org.openofdh</groupId>
+      <artifactId>ofdh-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.pdfbox</groupId>
+      <artifactId>pdfbox</artifactId>
+      <version>3.0.8</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ofdrw</groupId>
+      <artifactId>ofdrw-graphics2d</artifactId>
+      <version>${ofdrw.version}</version>
+    </dependency>
+  </dependencies>
+</project>

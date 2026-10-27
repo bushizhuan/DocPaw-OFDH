@@ -1,0 +1,8 @@
+DocPaw-OFDH
+
+This distribution uses third-party libraries. Their license and notice files
+remain in the original JAR files under lib/. See THIRD-PARTY.md for the
+dependency inventory and redistribution boundaries.
+
+The GB/T 48666-2026 standard text is not included in this distribution.
+OFD and OFD-H are names of document formats, not endorsements of this software.

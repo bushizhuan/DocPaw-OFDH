@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:openofdh:clinical:admission-record:0.1.0",
+  "title": "入院记录",
+  "description": "DocPaw-OFDH 项目接入约束，不是国家标准的官方 Schema。约束入院时间、主诉、现病史和诊断结构，不判断诊断正确性或病历书写完整性。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["head", "meta", "identifier", "patient", "encounter", "content"],
+  "properties": {
+    "head": {"$ref": "#/$defs/head"},
+    "meta": {"$ref": "#/$defs/meta"},
+    "identifier": {"$ref": "#/$defs/identifier"},
+    "patient": {"$ref": "#/$defs/patient"},
+    "encounter": {"$ref": "#/$defs/identity"},
+    "content": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["admittedAt", "chiefComplaint", "presentIllness", "diagnoses"],
+      "properties": {
+        "admittedAt": {"$ref": "#/$defs/timestamp", "description": "实际入院时间，不以文书生成时间替代。"},
+        "chiefComplaint": {"$ref": "#/$defs/narrative", "description": "来源文书中的主诉。"},
+        "presentIllness": {"$ref": "#/$defs/narrative", "description": "来源文书中的现病史。"},
+        "pastHistory": {"$ref": "#/$defs/narrative"},
+        "allergyHistory": {"$ref": "#/$defs/narrative"},
+        "physicalExamination": {"$ref": "#/$defs/narrative"},
+        "auxiliaryExaminations": {"$ref": "#/$defs/narrative"},
+        "assessmentPlan": {"$ref": "#/$defs/narrative"},
+        "diagnoses": {"type": "array", "minItems": 1, "maxItems": 1000, "items": {"$ref": "#/$defs/diagnosis"}, "description": "按来源顺序保存；文字诊断必填，来源未编码时不补造编码。"},
+        "extensions": {"$ref": "#/$defs/extensions"}
+      }
+    },
+    "extensions": {"$ref": "#/$defs/extensions"}
+  },
+  "$defs": {
+    "nonBlank": {"type": "string", "minLength": 1, "maxLength": 512, "pattern": "\\S"},
+    "narrative": {"type": "string", "minLength": 1, "maxLength": 1000000, "pattern": "\\S"},
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$",
+      "description": "带时区的时间，要求真实日历日期；支持 Z 或明确的时区偏移。"
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "authority"],
+      "properties": {"id": {"$ref": "#/$defs/nonBlank"}, "authority": {"$ref": "#/$defs/nonBlank"}}
+    },
+    "person": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "authority"],
+      "properties": {"id": {"$ref": "#/$defs/nonBlank"}, "name": {"$ref": "#/$defs/nonBlank"}, "authority": {"$ref": "#/$defs/nonBlank"}}
+    },
+    "codedConcept": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "scheme"],
+      "properties": {"code": {"$ref": "#/$defs/nonBlank"}, "scheme": {"$ref": "#/$defs/nonBlank"}, "display": {"$ref": "#/$defs/nonBlank"}},
+      "description": "代码与代码体系必须同时提供；不内置或推断医院采用的代码字典。"
+    },
+    "diagnosis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text"],
+      "properties": {
+        "text": {"$ref": "#/$defs/narrative"},
+        "coding": {"$ref": "#/$defs/codedConcept"},
+        "primary": {"type": "boolean", "description": "仅记录来源系统的主诊断标记，不由工具推断。"},
+        "extensions": {"$ref": "#/$defs/extensions"}
+      }
+    },
+    "patient": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "authority"],
+      "properties": {
+        "id": {"$ref": "#/$defs/nonBlank"},
+        "authority": {"$ref": "#/$defs/nonBlank"},
+        "name": {"$ref": "#/$defs/nonBlank"},
+        "birthDate": {"type": "string", "format": "date", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+        "sex": {"$ref": "#/$defs/codedConcept"}
+      }
+    },
+    "head": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profile", "schemaId", "version", "documentVersion", "createdAt", "modifiedAt"],
+      "properties": {
+        "profile": {"const": "urn:openofdh:clinical-envelope:0.1.0"},
+        "schemaId": {"const": "urn:openofdh:clinical:admission-record"},
+        "version": {"const": "0.1.0"},
+        "documentVersion": {"$ref": "#/$defs/nonBlank"},
+        "createdAt": {"$ref": "#/$defs/timestamp"},
+        "modifiedAt": {"$ref": "#/$defs/timestamp"}
+      }
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["creator", "keywords", "properties"],
+      "properties": {
+        "title": {"$ref": "#/$defs/nonBlank"},
+        "creator": {"$ref": "#/$defs/person"},
+        "keywords": {"type": "array", "minItems": 1, "maxItems": 100, "uniqueItems": true, "items": {"$ref": "#/$defs/nonBlank"}},
+        "properties": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sourceSystem", "sourceRecordId"],
+          "properties": {"sourceSystem": {"$ref": "#/$defs/nonBlank"}, "sourceRecordId": {"$ref": "#/$defs/nonBlank"}, "extensions": {"$ref": "#/$defs/extensions"}}
+        }
+      }
+    },
+    "identifier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["documentId", "documentType", "confidentiality"],
+      "properties": {"documentId": {"$ref": "#/$defs/nonBlank"}, "documentType": {"$ref": "#/$defs/codedConcept"}, "confidentiality": {"$ref": "#/$defs/codedConcept"}}
+    },
+    "extensions": {"type": "object", "description": "接入方扩展字段；调用方应维护键的命名空间和版本，扩展内容的业务含义不由本 Schema 判断。"}
+  }
+}

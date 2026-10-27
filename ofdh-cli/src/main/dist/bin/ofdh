@@ -1,0 +1,9 @@
+#!/bin/sh
+set -eu
+OFDH_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+if [ -n "${JAVA_HOME:-}" ]; then
+    OFDH_JAVA="$JAVA_HOME/bin/java"
+else
+    OFDH_JAVA=java
+fi
+exec "$OFDH_JAVA" "-Xmx${OFDH_MAX_HEAP:-1024m}" -Dfile.encoding=UTF-8 -Djava.awt.headless=true -cp "$OFDH_DIR/lib/*" org.openofdh.cli.OfdhCommand "$@"
