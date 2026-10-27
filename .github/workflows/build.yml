@@ -15,9 +15,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: 检出源码
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # 固定 v7.0.1
       - name: 准备测试运行时
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # 固定 v6.1.0
         with:
           distribution: temurin
           java-version: ${{ matrix.runtime }}
@@ -30,7 +30,7 @@ jobs:
             echo "TEST_JAVA=$JAVA_HOME/bin/java" >> "$GITHUB_ENV"
           fi
       - name: 准备构建工具链
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # 固定 v6.1.0
         with:
           distribution: temurin
           java-version: '21'
@@ -46,20 +46,20 @@ jobs:
         shell: pwsh
         run: ./tools/audit-dependencies.ps1
       - name: 准备发行工具
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # 固定 v7.1.0
         with:
           python-version: '3.12'
       - name: 收集制品与校验和
         run: python tools/collect-release.py
       - name: 上传发行包
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # 固定 v7.0.2
         with:
           name: DocPaw-OFDH-${{ matrix.os }}-java${{ matrix.runtime }}
           if-no-files-found: error
           path: dist/ofdh-*/*
       - name: 保存依赖审计结果
         if: always() && matrix.os == 'ubuntu-latest' && matrix.runtime == '21'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # 固定 v7.0.2
         with:
           name: dependency-audit
           if-no-files-found: warn
@@ -69,9 +69,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 检出源码
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # 固定 v7.0.1
       - name: 准备校验工具
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # 固定 v7.1.0
         with:
           python-version: '3.12'
           cache: pip
