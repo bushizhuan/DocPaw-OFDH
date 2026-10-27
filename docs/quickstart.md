@@ -33,6 +33,8 @@ work/
 
 输入 PDF 时，将文件放为 `input/source.pdf`，并在下一节同时修改 `source.format` 和 `source.path`。PDF 应为静态可检索文件并嵌入所需 TrueType 字体，完整范围见 [接入说明](integration.md)。
 
+英文 Windows 建议使用 `C:/ofdh-work` 等 ASCII 工作路径。Java 原生启动器需要按系统本机编码解析安装和命令行路径；仅设置 `file.encoding=UTF-8` 不能解决启动前的路径字符替换。
+
 ## 3. 填写请求
 
 创建 UTF-8 的 `request.json`。下面 `<…>` 标记均须替换为该份文书的实际值；时间只展示格式，应填写来源记录的创建时间。

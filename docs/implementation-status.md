@@ -41,7 +41,11 @@ python tools/check-publication.py
 
 2026-10-27 的 Windows 验证记录：主工程 202 项、独立消费者 10 项，在 Java 8、17、21 测试进程下均无失败、错误或跳过；发行工具 17 项、契约 31 个正例和 110 个反例通过。构建由 JDK 21 完成。GitHub 的 Windows/Linux 运行时矩阵结果以 [Actions](https://github.com/bushizhuan/DocPaw-OFDH/actions) 中对应提交为准。
 
-测试创建实际格式文件和临时签署身份，覆盖 XML/ZIP/路径与预算、字段及来源一致性、PDF 字体与文字、资源引用、签名与证书链、错误身份和摘要模式、输入不变及失败不发布。独立消费者测试打包后的 JAR、相对依赖路径、中文和空格目录。
+测试创建实际格式文件和临时签署身份，覆盖 XML/ZIP/路径与预算、字段及来源一致性、PDF 字体与文字、资源引用、签名与证书链、错误身份和摘要模式、输入不变及失败不发布。独立消费者测试打包后的 JAR、相对依赖路径和空格目录；本机编码可表示中文时同时使用中文安装目录。
+
+Windows 原生 Java 启动器的命令行路径受系统本机编码影响。英文系统建议把 CLI、接入 JAR 及命令行输入输出放在 ASCII 路径；`-Dfile.encoding=UTF-8` 控制 Java 文本处理，不能恢复启动器已替换的路径字符。该限制发生在应用启动前，SDK 进程内通过 Java 文件 API 处理 UTF-8 数据不受此命令行转换影响。
+
+原生入口行为可参见 [OpenJDK 的 Windows 启动器说明](https://github.com/openjdk/jdk/pull/20428)。
 
 这些测试不构成院方 CA 联调、独立产品验签或临床文书逐页视觉验收。目标系统的外部验证方式见 [接入验收](acceptance-and-release.md)。
 

@@ -22,6 +22,7 @@ import org.openofdh.core.validation.ClinicalSchemas;
 
 import java.io.DataInputStream;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -49,7 +50,17 @@ class PrepareDocumentIT {
         assertNotNull(artifact, "请使用 mvn verify 执行打包后的接入测试");
         Path built = Paths.get(artifact);
         assertTrue(Files.isRegularFile(built), "接入工程必须先完成打包");
-        Path installed = Files.createDirectory(installation.resolve("SDK 接入工程"));
+        String installationName = "SDK 接入工程";
+        String nativeEncoding =
+                System.getProperty(
+                        "native.encoding",
+                        System.getProperty("sun.jnu.encoding", Charset.defaultCharset().name()));
+        // Windows 启动器按本机编码处理路径；file.encoding 不改变这个原生入口。
+        if (System.getProperty("os.name").startsWith("Windows")
+                && !Charset.forName(nativeEncoding).newEncoder().canEncode(installationName)) {
+            installationName = "SDK integration";
+        }
+        Path installed = Files.createDirectory(installation.resolve(installationName));
         application = Files.copy(built, installed.resolve(built.getFileName()));
         Path dependencies = Files.createDirectory(installed.resolve("dependency"));
         try (Stream<Path> jars = Files.list(built.getParent().resolve("dependency"))) {

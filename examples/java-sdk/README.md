@@ -21,7 +21,7 @@ cd examples/java-sdk
 mvn -B -ntp clean verify
 ```
 
-接入工程不使用根目录的 `target/classes`、相对 `systemPath` 或未发布的测试工具。`verify` 在打包后执行集成测试：把 JAR 和依赖复制到包含中文与空格的临时目录，从另一工作目录以 `java -jar` 启动。测试临时创建实际 PDF/OFD、请求和临床 JSON，验证转换、机读附件原字节保留、字段错误、非法 JSON、输出保护及退出码；这些材料不进入运行包。
+接入工程不使用根目录的 `target/classes`、相对 `systemPath` 或未发布的测试工具。`verify` 在打包后执行集成测试：把 JAR 和依赖复制到带空格的临时目录，从另一工作目录以 `java -jar` 启动；本机编码可表示中文时同时使用中文目录。测试临时创建实际 PDF/OFD、请求和临床 JSON，验证转换、机读附件原字节保留、字段错误、非法 JSON、输出保护及退出码；这些材料不进入运行包。
 
 构建产物如下：
 
@@ -67,6 +67,8 @@ echo $?
 ```
 
 上面的路径需要替换为自己的请求、输入目录和新输出文件。省略 `--optimize-page-order` 使用默认 ZIP 排列；开启后按文档页序前置页面和依赖，含义及限制见 [页面顺序优化](../../docs/page-order.md)。
+
+Windows 的 `java -jar` 入口需要安装和参数路径能被系统本机编码表示。英文系统建议使用 ASCII 路径；中文 JSON 仍按 UTF-8 处理。`-Dfile.encoding=UTF-8` 不改变原生启动器的路径解析，无法恢复已被替换为 `?` 的字符。
 
 附带机读数据时，在请求中声明 `clinicalData.path`、`schemaId` 和 `schemaVersion`，将临床 JSON 放在输入根目录下。入口会通过 SDK 执行本地 Schema 校验并保存附件原字节；不会从 PDF 文字中推断诊断编码或代填临床事实。三类内置规范和字段说明见 [临床 Schema](../../docs/clinical-schemas.md)。
 
